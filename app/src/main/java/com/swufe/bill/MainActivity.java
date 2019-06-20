@@ -577,7 +577,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mReceiver);
-        mSensorManager.unregisterListener(this);
+//        unregisterReceiver(mReceiver);
+//        mSensorManager.unregisterListener(this);
     }
 }

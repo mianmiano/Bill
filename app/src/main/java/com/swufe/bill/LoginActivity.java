@@ -1,7 +1,10 @@
 package com.swufe.bill;
 
+import android.content.Context;
 import android.content.Intent;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -32,6 +35,7 @@ public class LoginActivity extends AppCompatActivity
     private Button loginBtn;
 
     public BmobUser user;
+    private SharedPreferences sp;
 
     //是否是登陆操作
     private boolean isLogin = true;
@@ -51,6 +55,34 @@ public class LoginActivity extends AppCompatActivity
         signTV.setOnClickListener(this);
         forgetTV.setOnClickListener(this);
         loginBtn.setOnClickListener(this);
+
+        sp = getSharedPreferences("login", Context.MODE_PRIVATE);
+        boolean login = sp.getBoolean("login",false);
+        Log.i(TAG, "login="+login);
+        String username;
+        String password;
+        user = new BmobUser();
+        if(login){
+            username = sp.getString("username", null);
+            password = sp.getString("password", null);
+            user.setUsername(username);
+            user.setPassword(password);
+            user.login(new SaveListener<Object>() {
+                @Override
+                public void done(Object o, BmobException e) {
+                    if(e==null){
+                        Log.i(TAG, "登录成功");
+                        GlobalUtil.getInstance().setUserId(user);
+                        Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+                        startActivity(intent);
+                    }else{
+                        Log.i(TAG, "登录失败：" + e.getMessage());
+                    }
+                }
+            });
+        }else{
+            login();
+        }
     }
 
     private void init_views() {
@@ -107,6 +139,7 @@ public class LoginActivity extends AppCompatActivity
     }
 
     public void login() {
+
         String username = usernameET.getText().toString();
         String password = passwordET.getText().toString();
         if (username.length() == 0 || password.length() == 0) {
@@ -114,14 +147,17 @@ public class LoginActivity extends AppCompatActivity
             return;
         }
         user = new BmobUser();
-        user.setUsername("AA");
-        user.setPassword("111111");
+        user.setUsername(username);
+        user.setPassword(password);
         user.login(new SaveListener<Object>() {
             @Override
             public void done(Object o, BmobException e) {
                 if(e==null){
                     Log.i(TAG, "登录成功");
                     GlobalUtil.getInstance().setUserId(user);
+                    sp.edit().putString("username", username)
+                            .putString("password", password)
+                            .putBoolean("login",true).apply();
                     Intent intent = new Intent(LoginActivity.this,MainActivity.class);
                     startActivity(intent);
                 }else{

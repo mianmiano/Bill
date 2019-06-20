@@ -10,4 +10,11 @@
     app:layout_collapseMode="pin"
     app:layout_scrollFlags="scroll|enterAlways"
     app:popupTheme="@style/AppTheme.PopupOverlay">
+    <ImageButton
+        android:id="@+id/btn_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/ic_toolbar_date"
+        android:layout_gravity="right"
+        android:layout_marginRight="16dp"/>
 </androidx.appcompat.widget.Toolbar>

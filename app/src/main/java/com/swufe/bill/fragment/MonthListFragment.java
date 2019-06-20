@@ -10,6 +10,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +39,7 @@ import cn.bmob.v3.listener.FindListener;
 
 import static com.swufe.bill.utils.BillUtil.packageDetailList;
 
-public class MonthListFragment extends Fragment implements Runnable {
+public class MonthListFragment extends Fragment{
 
     private static String TAG = "MonthListFragment";
 
@@ -49,8 +51,8 @@ public class MonthListFragment extends Fragment implements Runnable {
 
     int part, index;
     private static final int SPAN_SIZE = 1;
-//    private String setYear = DateUtils.getCurYear(FORMAT_Y);
-//    private String setMonth = DateUtils.getCurMonth(FORMAT_M);
+    private String setYear = MonthChartFragment.getYearAndMonthNow()[0];
+    private String setMonth = MonthChartFragment.getYearAndMonthNow()[1];
 
     private StickyHeaderGridLayoutManager mLayoutManager;
     private MonthListAdapter adapter;
@@ -78,7 +80,26 @@ public class MonthListFragment extends Fragment implements Runnable {
         init_views();
 
         //开启子线程
-        Thread thread = new Thread(this); //注意！必须加this
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                BmobQuery<Bill> query = getMonthList(user,setYear,setMonth);
+                query.findObjects(new FindListener<Bill>() {
+                    @Override
+                    public void done(List<Bill> object, BmobException e) {
+                        if(e==null){
+                            Log.i(TAG, "done: 共有"+object.size()+"条");
+                            MonthListBean mlb = packageDetailList(object);
+                            Message msg = handler.obtainMessage(5);
+                            msg.obj = mlb;
+                            handler.sendMessage(msg);
+                        }else{
+                            Log.i("bmob","失败："+e.getMessage()+","+e.getErrorCode());
+                        }
+                    }
+                });
+            }
+        }); //注意！必须加this
         thread.start(); // 调用run方法
         handler = new Handler() {
             @Override
@@ -124,35 +145,6 @@ public class MonthListFragment extends Fragment implements Runnable {
 
     }
 
-    @Override
-    public void run() {
-        BmobQuery<Bill> eq1 = new BmobQuery<>();
-        eq1.addWhereEqualTo("userId",user);
-        String y2m = getYear2Month();
-        BmobQuery<Bill> eq2 = new BmobQuery<>();
-        eq2.addWhereEqualTo("year2month",y2m);
-        List<BmobQuery<Bill>> andQuerys = new ArrayList<BmobQuery<Bill>>();
-        andQuerys.add(eq1);
-        andQuerys.add(eq2);
-        BmobQuery<Bill> query = new BmobQuery<Bill>();
-        query.and(andQuerys);
-        query.setLimit(50);
-        query.findObjects(new FindListener<Bill>() {
-            @Override
-            public void done(List<Bill> object, BmobException e) {
-                if(e==null){
-                    Log.i(TAG, "done: 共有"+object.size()+"条");
-                    MonthListBean mlb = packageDetailList(object);
-                    Message msg = handler.obtainMessage(5);
-                    msg.obj = mlb;
-                    handler.sendMessage(msg);
-                }else{
-                    Log.i("bmob","失败："+e.getMessage()+","+e.getErrorCode());
-                }
-            }
-        });
-    }
-
     private String getYear2Month() {
         Calendar cal = Calendar.getInstance();
         String year = String.valueOf(cal.get(Calendar.YEAR));
@@ -167,6 +159,47 @@ public class MonthListFragment extends Fragment implements Runnable {
         return date;
     }
 
+    public void changeDate(String year, String month) {
+        setYear = year;
+        setMonth = month;
+        Log.i(TAG, "changeDate: year="+setYear+" month="+setMonth);
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                BmobQuery<Bill> query = getMonthList(user,setYear,setMonth);
+                query.findObjects(new FindListener<Bill>() {
+                    @Override
+                    public void done(List<Bill> object, BmobException e) {
+                        if(e==null){
+                            Log.i(TAG, "done: 共有"+object.size()+"条");
+                            MonthListBean mlb = packageDetailList(object);
+                            Message msg = handler.obtainMessage(5);
+                            msg.obj = mlb;
+                            handler.sendMessage(msg);
+                        }else{
+                            Log.i("bmob","失败："+e.getMessage()+","+e.getErrorCode());
+                        }
+                    }
+                });
+            }
+        }); //注意！必须加this
+        thread.start(); // 调用run方法
+    }
+
+    private BmobQuery<Bill> getMonthList(BmobUser user, String setYear, String setMonth) {
+        String y2m = setYear+"-"+setMonth;
+        BmobQuery<Bill> eq1 = new BmobQuery<>();
+        eq1.addWhereEqualTo("userId",user);
+        BmobQuery<Bill> eq2 = new BmobQuery<>();
+        eq2.addWhereEqualTo("year2month",y2m);
+        List<BmobQuery<Bill>> andQuerys = new ArrayList<BmobQuery<Bill>>();
+        andQuerys.add(eq1);
+        andQuerys.add(eq2);
+        BmobQuery<Bill> query = new BmobQuery<Bill>();
+        query.and(andQuerys);
+        query.setLimit(50);
+        return query;
+    }
 
     public interface MonthListListener {
         void OnDataChanged(String outcome, String income, String total);

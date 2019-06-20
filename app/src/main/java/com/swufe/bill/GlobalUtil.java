@@ -95,7 +95,7 @@ public class GlobalUtil {
         conDatabaseHelper = new ConDatabaseHelper();
 
         Bmob.initialize(context,"95131e35bd99e7e316cee6797a581bf8","Bmob");
-        login();
+//        login();
 
         robot = new DefaultUser("0","面面","R.id.drawable.robot");
 
@@ -161,21 +161,21 @@ public class GlobalUtil {
         return costRes.get(0).resWhite;
     }
 
-    private void login(){
-        user = new BmobUser();
-        user.setUsername("AA");
-        user.setPassword("111111");
-        user.login(new SaveListener<Object>() {
-            @Override
-            public void done(Object o, BmobException e) {
-                if(e==null){
-                    Log.i(TAG, "登录成功");
-                }else{
-                    Log.i(TAG, "登录失败：" + e.getMessage());
-                }
-            }
-        });
-    }
+//    private void login(){
+//        user = new BmobUser();
+//        user.setUsername("AA");
+//        user.setPassword("111111");
+//        user.login(new SaveListener<Object>() {
+//            @Override
+//            public void done(Object o, BmobException e) {
+//                if(e==null){
+//                    Log.i(TAG, "登录成功");
+//                }else{
+//                    Log.i(TAG, "登录失败：" + e.getMessage());
+//                }
+//            }
+//        });
+//    }
 
     public void setUserId(BmobUser user){this.user = user;}
     public BmobUser getUserId(){

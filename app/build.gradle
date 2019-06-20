@@ -51,6 +51,7 @@ dependencies {
     //MPAndroidChart
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
+    implementation 'com.contrarywind:Android-PickerView:4.1.6'
 
 }
 

@@ -31,6 +31,7 @@ import com.swufe.bill.adapter.MonthChartBillViewBinder;
 import com.swufe.bill.base.BaseFragment;
 import com.swufe.bill.bean.Bill;
 import com.swufe.bill.bean.MonthChartBean;
+import com.swufe.bill.bean.MonthListBean;
 import com.swufe.bill.widget.PieChartUtils;
 
 import java.text.DecimalFormat;
@@ -83,8 +84,8 @@ public class MonthChartFragment extends Fragment implements Runnable,
     private Handler handler;
     private BmobUser user = GlobalUtil.getInstance().getUserId();
 
-//    private String setYear = DateUtils.getCurYear(FORMAT_Y);
-//    private String setMonth = DateUtils.getCurMonth(FORMAT_M);
+    private String setYear = MonthChartFragment.getYearAndMonthNow()[0];
+    private String setMonth = MonthChartFragment.getYearAndMonthNow()[1];
 
     public MonthChartFragment(){}
 
@@ -150,7 +151,7 @@ public class MonthChartFragment extends Fragment implements Runnable,
         swipe.setProgressViewEndTarget(false, 200);
         swipe.setOnRefreshListener(()->{
             swipe.setRefreshing(false);
-            getMonthChart(GlobalUtil.getInstance().getUserId(),"2019-06");
+            changeDate(setYear,setMonth);
 //            getMonthChart(GlobalUtil.getInstance().getUserId(), setYear, setMonth);
         });
 
@@ -166,7 +167,7 @@ public class MonthChartFragment extends Fragment implements Runnable,
 
     @Override
     public void run() {
-        BmobQuery<Bill> query = getDataFromDB(GlobalUtil.getInstance().getUserId(),getYear2MonthNow());
+        BmobQuery<Bill> query = getMonthChart(GlobalUtil.getInstance().getUserId(),setYear,setMonth);
         query.findObjects(new FindListener<Bill>() {
             @Override
             public void done(List<Bill> object, BmobException e) {
@@ -184,7 +185,8 @@ public class MonthChartFragment extends Fragment implements Runnable,
         });
     }
 
-    private BmobQuery<Bill> getDataFromDB(BmobUser user,String y2m) {
+    private BmobQuery<Bill> getMonthChart(BmobUser user,String setYear, String setMonth) {
+        String y2m = setYear+"-"+setMonth;
         BmobQuery<Bill> eq1 = new BmobQuery<>();
         eq1.addWhereEqualTo("userId",user);
         BmobQuery<Bill> eq2 = new BmobQuery<>();
@@ -198,7 +200,8 @@ public class MonthChartFragment extends Fragment implements Runnable,
         return query;
     }
 
-    private String getYear2MonthNow() {
+    public static String[] getYearAndMonthNow() {
+        String[] date = new String[2];
         Calendar cal = Calendar.getInstance();
         String year = String.valueOf(cal.get(Calendar.YEAR));
         int m = cal.get(Calendar.MONTH)+1;
@@ -208,7 +211,8 @@ public class MonthChartFragment extends Fragment implements Runnable,
         }else{
             month = String.valueOf(m);
         }
-        String date = year+"-"+month;
+        date[0]=year;
+        date[1]=month;
         return date;
     }
 
@@ -299,30 +303,31 @@ public class MonthChartFragment extends Fragment implements Runnable,
         adapter.notifyDataSetChanged();
     }
 
-    private void getMonthChart(BmobUser user,String year2month){
-        final MonthChartBean[] mChartBean = new MonthChartBean[1];
-        //查询数据
-        BmobQuery<Bill> query = getDataFromDB(user,year2month);
-        query.findObjects(new FindListener<Bill>() {
+    public void changeDate(String year, String month) {
+        setYear = year;
+        setMonth = month;
+        Thread thread = new Thread(new Runnable() {
             @Override
-            public void done(List<Bill> object, BmobException e) {
-                if(e==null){
-                    Log.i(TAG, "done: 共有"+object.size()+"条");
-                    mChartBean[0] = packageChartList(object);
-                    Log.i(TAG, "done: monthChartBean="+ mChartBean[0].getTotalIn());
-//                    Message msg = handler.obtainMessage(3);
-//                    msg.obj = mChartBean;
-//                    handler.sendMessage(msg);
-                }else{
-                    Log.i("bmob","失败："+e.getMessage()+","+e.getErrorCode());
-                }
+            public void run() {
+                BmobQuery<Bill> query = getMonthChart(user,setYear,setMonth);
+                query.findObjects(new FindListener<Bill>() {
+                    @Override
+                    public void done(List<Bill> object, BmobException e) {
+                        if(e==null){
+                            Log.i(TAG, "done: 共有"+object.size()+"条");
+                            MonthChartBean mcb = packageChartList(object);
+                            Message msg = handler.obtainMessage(5);
+                            msg.obj = mcb;
+                            handler.sendMessage(msg);
+                        }else{
+                            Log.i("bmob","失败："+e.getMessage()+","+e.getErrorCode());
+                        }
+                    }
+                });
             }
-        });
-        //显示数据
-        monthChartBean = mChartBean[0];
-        setReportData();
+        }); //注意！必须加this
+        thread.start(); // 调用run方法
     }
-
     @Override
     public void onValueSelected(Entry e, Highlight h) {
         if (e == null)
