@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -20,11 +21,13 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bigkoo.pickerview.builder.TimePickerBuilder;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import com.swufe.bill.BillActivity;
 import com.swufe.bill.GlobalUtil;
 import com.swufe.bill.R;
 import com.swufe.bill.adapter.MonthChartBillViewBinder;
@@ -37,6 +40,7 @@ import com.swufe.bill.widget.PieChartUtils;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,6 +51,7 @@ import cn.bmob.v3.listener.FindListener;
 import cn.jiguang.imui.view.CircleImageView;
 import me.drakeet.multitype.MultiTypeAdapter;
 
+import static com.swufe.bill.BillActivity.date2Str;
 import static com.swufe.bill.utils.BillUtil.packageChartList;
 
 public class MonthChartFragment extends Fragment implements Runnable,
@@ -72,6 +77,7 @@ public class MonthChartFragment extends Fragment implements Runnable,
     private RelativeLayout itemOther;
     private RecyclerView rvList;
     private LinearLayout layoutTypedata;
+    private ImageButton btnDate;
 
     private boolean TYPE = true;//默认总支出true
     private List<MonthChartBean.SortTypeList> tMoneyBeanList;
@@ -87,34 +93,72 @@ public class MonthChartFragment extends Fragment implements Runnable,
     private String setYear = MonthChartFragment.getYearAndMonthNow()[0];
     private String setMonth = MonthChartFragment.getYearAndMonthNow()[1];
 
+    private boolean isPrepared;
+    public static boolean isEdit = false;
+    public static boolean isChangedDate = false;
+
     public MonthChartFragment(){}
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        isPrepared = true;
         return inflater.inflate(R.layout.fragment_month_chart, container, false);
     }
 
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        setUserVisibleHint(true);
         super.onActivityCreated(savedInstanceState);
         init_views();
 
-        //开启子线程
-        Thread thread = new Thread(this); //注意！必须加this
-        thread.start(); // 调用run方法
+        if(monthChartBean==null){
+            //开启子线程
+            Thread thread = new Thread(this); //注意！必须加this
+            thread.start(); // 调用run方法
 
-        handler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                if (msg.what == 3) {
-                    monthChartBean = (MonthChartBean) msg.obj;
-                    Log.i(TAG, "handleMessage: monthChartBean="+monthChartBean.getTotalIn());
-                    setReportData();
+            handler = new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
+                    if (msg.what == 3) {
+                        monthChartBean = (MonthChartBean) msg.obj;
+                        Log.i(TAG, "handleMessage: monthChartBean="+monthChartBean.getTotalIn());
+                        setReportData();
+                    }
+                    super.handleMessage(msg);
                 }
-                super.handleMessage(msg);
-            }
-        };
+            };
+        }
+
+
+//        btnDate.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                new TimePickerBuilder(getActivity(), (Date date, View v) -> {
+//                    setYear = date2Str(date,"yyyy");
+//                    setMonth = date2Str(date,"MM");
+//                    Log.i("TimePickerBuilder", "onClick: year="+setYear+" month="+setMonth);
+//                    BmobQuery<Bill> query = MonthListFragment.getMonthList(user,setYear,setMonth);
+//                    query.findObjects(new FindListener<Bill>() {
+//                        @Override
+//                        public void done(List<Bill> object, BmobException e) {
+//                            if(e==null){
+//                                Log.i("TimePickerBuilder", "done: 共有"+object.size()+"条");
+//                                MonthChartBean mcb = packageChartList(object);
+//                                Message msg = handler.obtainMessage(9);
+//                                msg.obj = mcb;
+//                                handler.sendMessage(msg);
+//                            }else{
+//                                Log.i("bmob","失败："+e.getMessage()+","+e.getErrorCode());
+//                            }
+//                        }
+//                    });
+//                }).setType(new boolean[]{true, true, false, false, false, false})
+//                        .setRangDate(null, Calendar.getInstance())
+//                        .isDialog(true)//是否显示为对话框样式
+//                        .build().show();
+//            }
+//        });
     }
 
     private void init_views() {
@@ -129,13 +173,14 @@ public class MonthChartFragment extends Fragment implements Runnable,
         title = getActivity().findViewById(R.id.title);
         money = getActivity().findViewById(R.id.money);
         rankTitle = getActivity().findViewById(R.id.rank_title);
-        layoutOther = getActivity().findViewById(R.id.layout_other);
-        otherMoney = getActivity().findViewById(R.id.other_money);
+//        layoutOther = getActivity().findViewById(R.id.layout_other);
+//        otherMoney = getActivity().findViewById(R.id.other_money);
         swipe = getActivity().findViewById(R.id.swipe);
         itemType = getActivity().findViewById(R.id.item_type);
-        itemOther = getActivity().findViewById(R.id.item_other);
+//        itemOther = getActivity().findViewById(R.id.item_other);
         rvList = getActivity().findViewById(R.id.rv_list_chart);
         layoutTypedata = getActivity().findViewById(R.id.layout_typedata);
+        btnDate = getActivity().findViewById(R.id.btn_date);
 
 
         //初始化饼状图
@@ -151,7 +196,8 @@ public class MonthChartFragment extends Fragment implements Runnable,
         swipe.setProgressViewEndTarget(false, 200);
         swipe.setOnRefreshListener(()->{
             swipe.setRefreshing(false);
-            changeDate(setYear,setMonth);
+            changeDate(setYear,setMonth,monthChartBean);
+            setReportData();
 //            getMonthChart(GlobalUtil.getInstance().getUserId(), setYear, setMonth);
         });
 
@@ -162,11 +208,11 @@ public class MonthChartFragment extends Fragment implements Runnable,
 
         layoutCenter.setOnClickListener(this);
         itemType.setOnClickListener(this);
-        itemOther.setOnClickListener(this);
     }
 
     @Override
     public void run() {
+
         BmobQuery<Bill> query = getMonthChart(GlobalUtil.getInstance().getUserId(),setYear,setMonth);
         query.findObjects(new FindListener<Bill>() {
             @Override
@@ -183,6 +229,15 @@ public class MonthChartFragment extends Fragment implements Runnable,
                 }
             }
         });
+    }
+
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isPrepared && isVisibleToUser && (isChangedDate||isEdit)) {
+            monthChartBean = ((BillActivity)getActivity()).getMonthChartBean();
+            Log.i(TAG, "onCreateView: monthChartBean"+monthChartBean);
+            setReportData();
+        }
     }
 
     private BmobQuery<Bill> getMonthChart(BmobUser user,String setYear, String setMonth) {
@@ -225,15 +280,15 @@ public class MonthChartFragment extends Fragment implements Runnable,
                 break;
             case R.id.item_type:
                 break;
-            case R.id.item_other:
-                break;
+//            case R.id.item_other:
+//                break;
         }
     }
 
     /**
      * 报表数据
      */
-    private void setReportData() {
+    public void setReportData() {
 
         if (monthChartBean == null) {
             Log.i(TAG, "setReportData: monthChartBean为空！");
@@ -303,30 +358,10 @@ public class MonthChartFragment extends Fragment implements Runnable,
         adapter.notifyDataSetChanged();
     }
 
-    public void changeDate(String year, String month) {
+    public void changeDate(String year, String month,MonthChartBean monthChartBean) {
         setYear = year;
         setMonth = month;
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                BmobQuery<Bill> query = getMonthChart(user,setYear,setMonth);
-                query.findObjects(new FindListener<Bill>() {
-                    @Override
-                    public void done(List<Bill> object, BmobException e) {
-                        if(e==null){
-                            Log.i(TAG, "done: 共有"+object.size()+"条");
-                            MonthChartBean mcb = packageChartList(object);
-                            Message msg = handler.obtainMessage(5);
-                            msg.obj = mcb;
-                            handler.sendMessage(msg);
-                        }else{
-                            Log.i("bmob","失败："+e.getMessage()+","+e.getErrorCode());
-                        }
-                    }
-                });
-            }
-        }); //注意！必须加this
-        thread.start(); // 调用run方法
+        setReportData();
     }
     @Override
     public void onValueSelected(Entry e, Highlight h) {

@@ -8,8 +8,11 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.swufe.bill.MainActivity;
 import com.swufe.bill.R;
 import com.swufe.bill.bean.Bill;
+import com.swufe.bill.widget.PieChartUtils;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -32,15 +35,15 @@ public class MonthChartBillViewBinder extends ItemViewBinder<Bill,MonthChartBill
         else
             holder.money.setText("-" + item.getAmount());
         holder.root.setOnClickListener(v -> {
-//            new MaterialDialog.Builder(mContext)
-//                    .title(item.getSortName())
-//                    .content("\t\t" + Math.abs(item.getCost()) + "元\n\t\t" + item.getContent()
-//                            +"\n\n\t\t"+DateUtils.long2Str(item.getCrdate(), FORMAT_YMD_CN)
-//                            +"\n\t\t"+DateUtils.long2Str(item.getCrdate(), FORMAT_HMS_CN))
-//                    .positiveText("朕知道了")
-//                    .icon(ImageUtils.getDrawable(item.getSortImg()))
-//                    .limitIconToDefaultSize()
-//                    .show();
+            new MaterialDialog.Builder(mContext)
+                    .title(item.getCategory())
+                    .content("\t\t" + item.getAmount().toString() + "元\n\t\t" + item.getRemark()
+                            +"\n\n\t\t"+item.getDate())
+//                            +"\n\t\t"+DateUtils.long2Str(bBill.getCrdate(), FORMAT_HMS_CN))
+                    .positiveText("朕知道了")
+                    .icon(PieChartUtils.getDrawable(item.getCategory()))
+                    .limitIconToDefaultSize()
+                    .show();
         });
     }
 

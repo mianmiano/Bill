@@ -23,6 +23,10 @@ class CategoryRecyclerAdapter extends RecyclerView.Adapter<CategoryViewHolder> {
         return selected;
     }
 
+    public void setSelected(String selected) {
+        this.selected = selected;
+    }
+
     private String selected = "";
 
     public void setOnCategoryClickListener(OnCategoryClickListener onCategoryClickListener) {

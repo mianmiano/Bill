@@ -1,8 +1,9 @@
 package com.swufe.bill.bean;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class MonthChartBean {
+public class MonthChartBean implements Serializable {
     float totalOut;    //总支出
     float totalIn;    //总收入
     List<SortTypeList> outSortlist;    //账单分类统计支出

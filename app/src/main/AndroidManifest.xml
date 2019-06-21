@@ -29,7 +29,8 @@
             android:name=".BillActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity android:name=".RecordActivity" />
-        <activity android:name=".AddRecordActivity" />
+        <activity android:name=".AddRecordActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity
             android:name=".MainActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">

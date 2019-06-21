@@ -81,34 +81,19 @@ public class BillDatabaseHelper {
         return query;
     }
 
-    public LinkedList<Bill> readRecrods(String dateStr){
-        final LinkedList<Bill> records = new LinkedList<>();
-
+    public BmobQuery<Bill> readRecrods(String dateStr){
         //查询账户下对应时间的账
         BmobQuery<Bill> eq1 = new BmobQuery<Bill>();
         eq1.addWhereEqualTo("userId",GlobalUtil.getInstance().getUserId());
         BmobQuery<Bill> eq2 = new BmobQuery<Bill>();
-        eq2.addWhereEqualTo("data",dateStr);
+        eq2.addWhereEqualTo("year2month",dateStr);
         List<BmobQuery<Bill>> andQuerys = new ArrayList<BmobQuery<Bill>>();
         andQuerys.add(eq1);
         andQuerys.add(eq2);
         BmobQuery<Bill> query = new BmobQuery<Bill>();
         query.and(andQuerys);
         query.setLimit(50);
-        query.findObjects(new FindListener<Bill>() {
-            @Override
-            public void done(List<Bill> object, BmobException e) {
-                if(e==null){
-                    Log.i(TAG, "done: 查询成功：共"+object.size()+"条数据。");
-                    for (Bill bill : object) {
-                        records.add(bill);
-                    }
-                }else{
-                    Log.i("bmob","失败："+e.getMessage()+","+e.getErrorCode());
-                }
-            }
-        });
-        return records;
+        return query;
     }
 
     public LinkedList<String> getAvaliableDate(){

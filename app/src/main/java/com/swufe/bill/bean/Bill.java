@@ -2,6 +2,10 @@ package com.swufe.bill.bean;
 
 import com.swufe.bill.DateUtil;
 
+import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
@@ -10,7 +14,7 @@ import cn.bmob.v3.BmobObject;
 import cn.bmob.v3.BmobUser;
 import cn.bmob.v3.datatype.BmobDate;
 
-public class Bill extends BmobObject {
+public class Bill extends BmobObject implements Serializable {
     private BmobUser userId;
     private Integer type;
     private String category;
@@ -125,21 +129,17 @@ public class Bill extends BmobObject {
         return year2month;
     }
 
-    public void setYear2month(String year2month){
-        this.year2month = year2month;
-    }
-    public void setYear2month() {
-        Calendar cale = null;
-        cale = Calendar.getInstance();
-        int year = cale.get(Calendar.YEAR);
-        int m = cale.get(Calendar.MONTH) + 1;
-        String month;
-        if(m<10){
-            month = "0"+String.valueOf(m);
-        }else{
-            month = String.valueOf(m);
-        }
-        String y2m = String.valueOf(year)+"-"+month;
-        this.year2month = y2m;
+//    public void setYear2month(String year2month){
+//        this.year2month = year2month;
+//    }
+    public void setYear2month(String date) throws ParseException {
+        DateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+        Date d = format1.parse(date);
+
+        SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy");
+        SimpleDateFormat sdf2 = new SimpleDateFormat("MM");
+        String year = sdf1.format(d);
+        String month = sdf2.format(d);
+        this.year2month = year+"-"+month;
     }
 }

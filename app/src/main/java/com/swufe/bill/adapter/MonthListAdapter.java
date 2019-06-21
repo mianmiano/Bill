@@ -13,15 +13,19 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.swufe.bill.GlobalUtil;
 import com.swufe.bill.R;
 import com.swufe.bill.bean.Bill;
 import com.swufe.bill.bean.MonthListBean;
+import com.swufe.bill.fragment.MonthListFragment;
 import com.swufe.bill.widget.PieChartUtils;
 import com.swufe.bill.widget.SwipeMenuView;
 
 import java.util.List;
 
+import cn.bmob.v3.BmobQuery;
 import cn.bmob.v3.exception.BmobException;
+import cn.bmob.v3.listener.FindListener;
 import cn.bmob.v3.listener.UpdateListener;
 
 public class MonthListAdapter extends StickyHeaderGridAdapter {
@@ -90,7 +94,6 @@ public class MonthListAdapter extends StickyHeaderGridAdapter {
         final MyItemViewHolder holder = (MyItemViewHolder) viewHolder;
 
         Bill bBill = mDatas.get(section).getList().get(position);
-        Log.i(TAG, "onBindItemViewHolder: bill"+position+"="+ bBill.getCategory());
         holder.item_title.setText(bBill.getCategory());
         holder.item_img.setImageDrawable(PieChartUtils.getDrawable(bBill.getCategory()));
         if (bBill.getType()==2) {
@@ -98,31 +101,20 @@ public class MonthListAdapter extends StickyHeaderGridAdapter {
         } else {
             holder.item_money.setText("-" + bBill.getAmount());
         }
-        Log.i(TAG, "onBindItemViewHolder: category="+bBill.getCategory()+" amount="+bBill.getAmount());
 
         //监听侧滑删除事件
         holder.item_delete.setOnClickListener(v -> {
             final int section1 = getAdapterPositionSection(holder.getAdapterPosition());
             final int offset1 = getItemSectionOffset(section1, holder.getAdapterPosition());
 
-            //构造对话框进行确认操作
-            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            Log.i(TAG, "onItemLongClick: builder="+builder);
-            builder.setTitle("提示").setMessage("是否删除此条记录")
-                    .setPositiveButton("是", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            Log.i(TAG, "onClick: 对话框事件处理");
-                            //数据库删除对应数据
-                            Bill bill = mDatas.get(section1).getList().get(offset1);
-                            Log.i(TAG, "onClick: bill="+bill.getClass().toString()+" id="+bill.getObjectedId());
-                            onDeleteClick(bill);
-                            mDatas.remove(position);
-                            notifyDataSetChanged();
-                        }
+            new androidx.appcompat.app.AlertDialog.Builder(mContext).setTitle("是否删除此条记录")
+                    .setNegativeButton("取消", null)
+                    .setPositiveButton("确定", (dialog, which) -> {
+                        mDatas = onStickyHeaderClickListener
+                                .OnDeleteClick(mDatas.get(section1).getList().get(offset1), section1, offset1,mDatas);
+                        notifyAllSectionsDataSetChanged();
                     })
-                    .setNegativeButton("否",null);
-            builder.create().show();
+                    .show();
         });
         //监听侧滑编辑事件
         holder.item_edit.setOnClickListener(v -> {
@@ -138,8 +130,9 @@ public class MonthListAdapter extends StickyHeaderGridAdapter {
 //                    .limitIconToDefaultSize()
 //                    .show();
 //
-//            onStickyHeaderClickListener.OnEditClick(
-//                    mDatas.get(section1).getList().get(offset1), section1, offset1);
+            onStickyHeaderClickListener.OnEditClick(
+                    mDatas.get(section1).getList().get(offset1), section1, offset1);
+            notifyAllSectionsDataSetChanged();
         });
         //监听单击显示详情事件
         holder.item_layout.setOnClickListener(v -> {
@@ -159,27 +152,12 @@ public class MonthListAdapter extends StickyHeaderGridAdapter {
      * 自定义编辑、删除接口
      */
     public interface OnStickyHeaderClickListener {
-        void OnDeleteClick(Bill item, int section, int offset);
+        List<MonthListBean.DaylistBean> OnDeleteClick(Bill item, int section, int offset,
+                           List<MonthListBean.DaylistBean> data);
 
         void OnEditClick(Bill item, int section, int offset);
     }
 
-    public void onDeleteClick(Bill item){
-        item.delete(new UpdateListener() {
-            @Override
-            public void done(BmobException e) {
-                if(e==null){
-                    Log.i("bmob","成功");
-                }else{
-                    Log.i("bmob","失败："+e.getMessage()+","+e.getErrorCode());
-                }
-            }
-        });
-    }
-
-    public void OnEditClick(Bill item, int section, int offset){
-
-    }
 
     public static class MyHeaderViewHolder extends HeaderViewHolder {
         TextView header_date;
