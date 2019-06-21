@@ -133,7 +133,7 @@ public class MonthListFragment extends Fragment{
                     t_outcome.setText(monthListBean.getT_outcome());
                     t_total.setText(monthListBean.getT_total());
                     list = monthListBean.getDaylist();
-                    Log.i(TAG, "handleMessage: list.size="+list.get(0).getList().size());
+//                    Log.i(TAG, "handleMessage: list.size="+list.get(0).getList().size());
 
                     mLayoutManager = new StickyHeaderGridLayoutManager(SPAN_SIZE);
                     mLayoutManager.setHeaderBottomOverlapMargin(5);

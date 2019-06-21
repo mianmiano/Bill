@@ -62,27 +62,27 @@ public class LoginActivity extends AppCompatActivity
         String username;
         String password;
         user = new BmobUser();
-        if(login){
-            username = sp.getString("username", null);
-            password = sp.getString("password", null);
-            user.setUsername(username);
-            user.setPassword(password);
-            user.login(new SaveListener<Object>() {
-                @Override
-                public void done(Object o, BmobException e) {
-                    if(e==null){
-                        Log.i(TAG, "登录成功");
-                        GlobalUtil.getInstance().setUserId(user);
-                        Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-                        startActivity(intent);
-                    }else{
-                        Log.i(TAG, "登录失败：" + e.getMessage());
-                    }
-                }
-            });
-        }else{
+//        if(login){
+//            username = sp.getString("username", null);
+//            password = sp.getString("password", null);
+//            user.setUsername(username);
+//            user.setPassword(password);
+//            user.login(new SaveListener<Object>() {
+//                @Override
+//                public void done(Object o, BmobException e) {
+//                    if(e==null){
+//                        Log.i(TAG, "登录成功");
+//                        GlobalUtil.getInstance().setUserId(user);
+//                        Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+//                        startActivity(intent);
+//                    }else{
+//                        Log.i(TAG, "登录失败：" + e.getMessage());
+//                    }
+//                }
+//            });
+//        }else{
             login();
-        }
+//        }
     }
 
     private void init_views() {
@@ -197,6 +197,12 @@ public class LoginActivity extends AppCompatActivity
             public void done(BmobUser s, BmobException e) {
                 if(e==null){
                     Toast.makeText(LoginActivity.this, "注册成功"+s.toString(), Toast.LENGTH_SHORT).show();
+                    GlobalUtil.getInstance().setUserId(user);
+                    sp.edit().putString("username", username)
+                            .putString("password", password)
+                            .putBoolean("login",true).apply();
+                    Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+                    startActivity(intent);
                 }else{
                     Log.i(TAG, "done: 注册失败"+e.toString());
                 }

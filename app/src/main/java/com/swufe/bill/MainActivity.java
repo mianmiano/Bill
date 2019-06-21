@@ -33,6 +33,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -43,6 +44,8 @@ import com.swufe.bill.bean.Conversation;
 import com.swufe.bill.utils.InputUtils;
 import com.swufe.bill.widget.PieChartUtils;
 
+import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -182,7 +185,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             MyMessage message = new MyMessage(msgStr,IMessage.MessageType.SEND_TEXT.ordinal());
             message.setBillId(bill.getUuid());
             message.setConversationId(conversation.getUuid());
-            message.setUserInfo(new DefaultUser(user.getObjectId(), user.getUsername(), "R.drawable.deadpool"));
+            message.setMessageStatus(IMessage.MessageStatus.SEND_SUCCEED);
+            message.setUserInfo(new DefaultUser(user.getObjectId(), user.getUsername(), "R.drawable.me"));
             //添加到消息列表
             mAdapter.addToStart(message,true);
 
@@ -215,10 +219,10 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         this.mImm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         mWindow = getWindow();
 
-        mReceiver = new HeadsetDetectReceiver();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Intent.ACTION_HEADSET_PLUG);
-        registerReceiver(mReceiver, intentFilter);
+//        mReceiver = new HeadsetDetectReceiver();
+//        IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction(Intent.ACTION_HEADSET_PLUG);
+//        registerReceiver(mReceiver, intentFilter);
     }
 
     private void initMsgAdapter() {
@@ -394,26 +398,26 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             }
         });
 
-//        mAdapter.setMsgLongClickListener(new MsgListAdapter.OnMsgLongClickListener<MyMessage>() {
-//            @Override
-//            public void onMessageLongClick(View view, MyMessage message) {
+        mAdapter.setMsgLongClickListener(new MsgListAdapter.OnMsgLongClickListener<MyMessage>() {
+            @Override
+            public void onMessageLongClick(View view, MyMessage message) {
 //                Toast.makeText(getApplicationContext(),
 //                        getApplicationContext().getString(R.string.message_long_click_hint),
 //                        Toast.LENGTH_SHORT).show();
-//                // do something
-//            }
-//        });
+                // do something
+            }
+        });
 
-//        mAdapter.setOnAvatarClickListener(new MsgListAdapter.OnAvatarClickListener<MyMessage>() {
-//            @Override
-//            public void onAvatarClick(MyMessage message) {
-//                DefaultUser userInfo = (DefaultUser) message.getFromUser();
+        mAdapter.setOnAvatarClickListener(new MsgListAdapter.OnAvatarClickListener<MyMessage>() {
+            @Override
+            public void onAvatarClick(MyMessage message) {
+                DefaultUser userInfo = (DefaultUser) message.getFromUser();
 //                Toast.makeText(getApplicationContext(),
 //                        getApplicationContext().getString(R.string.avatar_click_hint),
 //                        Toast.LENGTH_SHORT).show();
-//                // do something
-//            }
-//        });
+                // do something
+            }
+        });
 
         mAdapter.setMsgStatusViewClickListener(new MsgListAdapter.OnMsgStatusViewClickListener<MyMessage>() {
             @Override
@@ -437,10 +441,16 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
         messageList.setAdapter(mAdapter);
         mAdapter.getLayoutManager().scrollToPosition(0);
+
+        mReceiver = new HeadsetDetectReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_HEADSET_PLUG);
+        registerReceiver(mReceiver, intentFilter);
     }
 
     public void run(){
         final List<MyMessage> msglist = new ArrayList<>();
+
         BmobQuery<Conversation> bmobQuery = new BmobQuery<Conversation>();
         Log.i(TAG, "getMessages: userId="+user.getObjectId());
         bmobQuery.addWhereEqualTo("userId", user.getObjectId());
@@ -449,22 +459,44 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             public void done(List<Conversation> object, BmobException e) {
                 if(e==null){
                     Log.i(TAG, "查询成功：共"+object.size()+"条数据。");
-                    for (Conversation con : object) {
-                        int type = con.getType();
-                        String content = con.getContent();
-                        String uuid = con.getBillUuid();
-                        MyMessage message;
-                        if(type==1){
-                            message = new MyMessage(content,IMessage.MessageType.SEND_TEXT.ordinal());
-                            message.setBillId(uuid);
-                            message.setUserInfo(new DefaultUser("1", "DeadPool", "R.drawable.deadpool"));
-                        }else{
-                            message = new MyMessage(content,IMessage.MessageType.RECEIVE_TEXT.ordinal());
+                    if(object.size()==0){
+                        String content = "欢迎来到xixi记账~:)\n点击下方按钮，可以添加账目。" +
+                                "\n生成账目后，点击对话框可以查看账目信息。" +
+                                "\n点击右上角图标可以查看统计数据。";
+                        String time = DateUtil.getFormattedTime(System.currentTimeMillis());
+                        MyMessage message = new MyMessage(content,IMessage.MessageType.RECEIVE_TEXT.ordinal());
 //                            message.setUserInfo(GlobalUtil.getInstance().getRobot());
-                            message.setUserInfo(new DefaultUser("0", "面面", "R.drawable.robot"));
-                        }
+                        message.setTimeString(time);
+                        message.setUserInfo(new DefaultUser("0", "面面", "R.drawable.robot"));
                         msglist.add(message);
+                        Conversation conversation = new Conversation(2,content);
+                        conversation.setUserId(user);
+                        GlobalUtil.getInstance().conDatabaseHelper.addRecord(conversation);
+                    }else{
+                        for (Conversation con : object) {
+                            int type = con.getType();
+                            String content = con.getContent();
+                            String uuid = con.getBillUuid();
+                            String date = con.getCreatedAt();
+                            String time = getTime(date);
+                            Log.i(TAG, "done: time="+time);
+                            MyMessage message;
+                            if(type==1){
+                                message = new MyMessage(content,IMessage.MessageType.SEND_TEXT.ordinal());
+                                message.setBillId(uuid);
+                                message.setTimeString(time);
+                                message.setUserInfo(new DefaultUser(user.getObjectId(), user.getUsername(), "R.drawable.me"));
+                                message.setMessageStatus(IMessage.MessageStatus.SEND_SUCCEED);
+                            }else{
+                                message = new MyMessage(content,IMessage.MessageType.RECEIVE_TEXT.ordinal());
+//                            message.setUserInfo(GlobalUtil.getInstance().getRobot());
+                                message.setTimeString(time);
+                                message.setUserInfo(new DefaultUser("0", "面面", "R.drawable.robot"));
+                            }
+                            msglist.add(message);
+                        }
                     }
+
                     Message msg2 = handler.obtainMessage(2);
                     msg2.obj = msglist;
                     handler.sendMessage(msg2);
@@ -475,6 +507,18 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         });
 
 
+    }
+
+    private String getTime(String date) {
+        String dn = DateUtil.getFormattedDate();
+        String ymd = date.substring(0,10);
+        String hour = date.substring(11,16);
+        Log.i(TAG, "getTime: dn="+dn+" ymd="+ymd+" hour="+hour);
+        if (dn.compareTo(ymd)>0){
+            return date.substring(0,16);
+        }else{
+            return date.substring(11,16);
+        }
     }
 
     private void loadNextPage() {
