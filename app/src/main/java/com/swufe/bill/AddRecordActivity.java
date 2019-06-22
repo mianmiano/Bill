@@ -76,7 +76,7 @@ public class AddRecordActivity extends AppCompatActivity implements View.OnClick
         findViewById(R.id.keyboard_zero).setOnClickListener(this);
 
         toolbar = findViewById(R.id.toolbar_bill_add);
-        toolbar.setTitle("XixiBill");
+        toolbar.setTitle(R.string.app_name);
         btnDate = findViewById(R.id.btn_date_add);
         amountText = (TextView) findViewById(R.id.textView_amount);
         editText = (EditText) findViewById(R.id.editText);

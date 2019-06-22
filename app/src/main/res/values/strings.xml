@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Bill</string>
+    <string name="app_name">语记</string>
 
     <!-- Request permission start -->
     <string name="rationale_record_voice">This app needs access microphone to record voice.</string>

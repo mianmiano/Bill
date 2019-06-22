@@ -53,7 +53,6 @@ public class LoginActivity extends AppCompatActivity
         passwordET.setOnFocusChangeListener(this);
         rpasswordET.setOnFocusChangeListener(this);
         signTV.setOnClickListener(this);
-        forgetTV.setOnClickListener(this);
         loginBtn.setOnClickListener(this);
 
         sp = getSharedPreferences("login", Context.MODE_PRIVATE);
@@ -92,7 +91,6 @@ public class LoginActivity extends AppCompatActivity
         passwordET=findViewById(R.id.login_et_password);
         rpasswordET=findViewById(R.id.login_et_rpassword);
         signTV=findViewById(R.id.login_tv_sign);
-        forgetTV=findViewById(R.id.login_tv_forget);
         loginBtn=findViewById(R.id.login_btn_login);
     }
 
@@ -121,8 +119,6 @@ public class LoginActivity extends AppCompatActivity
                     emailET.setVisibility(View.GONE);
                 }
                 isLogin = !isLogin;
-                break;
-            case R.id.login_tv_forget:  //忘记密码
                 break;
             default:
                 break;

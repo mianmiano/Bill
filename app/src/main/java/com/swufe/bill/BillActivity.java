@@ -106,6 +106,7 @@ public class BillActivity extends AppCompatActivity implements View.OnClickListe
 
     private void init_views() {
         toolbar = findViewById(R.id.toolbar_bill);
+        toolbar.setTitle(R.string.app_name);
         tabLayout = findViewById(R.id.tablayout);
         viewPager = findViewById(R.id.main_viewpager);
         tOutcome = findViewById(R.id.t_outcome);
@@ -113,8 +114,6 @@ public class BillActivity extends AppCompatActivity implements View.OnClickListe
         tTotal = findViewById(R.id.t_total);
         btnDate = findViewById(R.id.btn_date);
 
-        //初始化Toolbar
-        toolbar.setTitle("XixiBill");
 
         //设置头部账户
         user = GlobalUtil.getInstance().getUserId();

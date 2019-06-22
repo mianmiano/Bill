@@ -15,8 +15,19 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:background="?attr/colorPrimary"
+            android:background="@color/colorPrimary"
             android:layout_weight="1"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="8dp"
+            android:layout_gravity="center"
+            android:background="@drawable/login" />
     </LinearLayout>
 
     <LinearLayout
@@ -109,16 +120,6 @@
             android:layout_height="50dp"
             android:background="#f7f7f7">
 
-            <TextView
-                android:id="@+id/login_tv_forget"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:gravity="center"
-                android:layout_centerVertical="true"
-                android:text="Forgot password?"
-                android:textSize="14sp"
-                android:textColor="#999999"/>
 
             <Button
                 android:id="@+id/login_btn_login"

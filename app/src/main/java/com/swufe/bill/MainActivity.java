@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     Log.i(TAG, "handleMessage: reply="+reply);
                     Log.i(TAG, "onActivityResult: reply="+reply);
                     MyMessage messageReply = new MyMessage(reply,IMessage.MessageType.RECEIVE_TEXT.ordinal());
-                    messageReply.setUserInfo(new DefaultUser("0", "面面", "R.drawable.robot"));
+                    messageReply.setUserInfo(new DefaultUser("0", "小语", "R.drawable.robot"));
                     mAdapter.addToStart(messageReply,true);
 
                     Conversation conReply = new Conversation(Conversation.RECEIVE_TEXT,reply);
@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         chatInputView = findViewById(R.id.chat_input);
         fab = findViewById(R.id.fab);
         toolbar = findViewById(R.id.toolbar_main);
-        toolbar.setTitle("XixiBill");
+        toolbar.setTitle(R.string.app_name);
         btnChart = findViewById(R.id.btn_chart);
 
         this.mImm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -460,14 +460,17 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 if(e==null){
                     Log.i(TAG, "查询成功：共"+object.size()+"条数据。");
                     if(object.size()==0){
-                        String content = "欢迎来到xixi记账~:)\n点击下方按钮，可以添加账目。" +
+                        String content = "欢迎来到语记~" +
+                                "\n我是机器人小语ヾ(◍°∇°◍)ﾉﾞ" +
+                                "\n点击下方按钮，可以添加账目。" +
                                 "\n生成账目后，点击对话框可以查看账目信息。" +
-                                "\n点击右上角图标可以查看统计数据。";
+                                "\n点击右上角图标可以查看统计数据和修改删除账目。" +
+                                "\n记得每天来找我聊天哦~";
                         String time = DateUtil.getFormattedTime(System.currentTimeMillis());
                         MyMessage message = new MyMessage(content,IMessage.MessageType.RECEIVE_TEXT.ordinal());
 //                            message.setUserInfo(GlobalUtil.getInstance().getRobot());
                         message.setTimeString(time);
-                        message.setUserInfo(new DefaultUser("0", "面面", "R.drawable.robot"));
+                        message.setUserInfo(new DefaultUser("0", "小语", "R.drawable.robot"));
                         msglist.add(message);
                         Conversation conversation = new Conversation(2,content);
                         conversation.setUserId(user);
