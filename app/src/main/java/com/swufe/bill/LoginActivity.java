@@ -13,7 +13,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.swufe.bill.bean.MyUser;
 import com.swufe.bill.widget.OwlView;
 
 import cn.bmob.v3.BmobUser;

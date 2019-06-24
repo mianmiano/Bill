@@ -114,8 +114,6 @@ public class GlobalUtil {
             res.resWhite = costIconResBlack_mp[i];
             earnRes.add(res);
         }
-
-
     }
 
     public static GlobalUtil getInstance(){

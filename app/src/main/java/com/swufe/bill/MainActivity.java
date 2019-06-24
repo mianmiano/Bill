@@ -106,7 +106,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 //        login();
 
         init_views();
-        user = (BmobUser) BmobUser.getCurrentUser(BmobUser.class);
+//        user = (BmobUser) BmobUser.getCurrentUser(BmobUser.class);
+        user = GlobalUtil.getInstance().getUserId();
         Log.i(TAG, "getMessages: user"+user);
 
         //开启子线程
@@ -205,8 +206,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     }
 
     private void init_views() {
-        GlobalUtil.getInstance().setContext(getApplicationContext());
-        GlobalUtil.getInstance().mainActivity = this;
+//        GlobalUtil.getInstance().setContext(getApplicationContext());
+//        GlobalUtil.getInstance().mainActivity = this;
 
         mContext = getBaseContext();
         messageList = findViewById(R.id.msg_list);

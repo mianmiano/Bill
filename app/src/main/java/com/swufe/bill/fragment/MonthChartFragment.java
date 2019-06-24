@@ -31,7 +31,6 @@ import com.swufe.bill.BillActivity;
 import com.swufe.bill.GlobalUtil;
 import com.swufe.bill.R;
 import com.swufe.bill.adapter.MonthChartBillViewBinder;
-import com.swufe.bill.base.BaseFragment;
 import com.swufe.bill.bean.Bill;
 import com.swufe.bill.bean.MonthChartBean;
 import com.swufe.bill.bean.MonthListBean;
